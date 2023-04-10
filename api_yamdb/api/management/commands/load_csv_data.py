@@ -42,32 +42,3 @@ class Command(BaseCommand):
             users.to_sql('users_yamdbuser', conn, if_exists='append', index = False, chunksize = 10000)
         except Exception as e:
             print('users', e)
-
-
-
-
-
-    '''
-    def handle(self, *args, **options):
-        convert('./static/data/category.csv', './db.sqlite3', 'titles_category')
-        convert('./static/data/comments.csv', './db.sqlite3', 'titles_comments')
-        convert('./static/data/genre_title.csv', './db.sqlite3', 'titles_genre_title')
-        convert('./static/data/genre.csv', './db.sqlite3', 'titles_genre')
-        convert('./static/data/review.csv', './db.sqlite3', 'titles_review')
-        convert('./static/data/titles.csv', './db.sqlite3', 'titles_titles')
-        convert('./static/data/users.csv', './db.sqlite3', 'users_yamdbuser')
-    '''
-    
-    '''
-    def handle(self, *args, **options):
-        options = csv_to_sqlite.CsvOptions(typing_style="full") 
-        input_files = ['./static/rdata/titles_category.csv',
-                       './static/rdata/titles_comments.csv',
-                       './static/rdata/titles_genre_title.csv',
-                       './static/rdata/titles_genre.csv',
-                       './static/rdata/titles_review.csv',
-                       './static/rdata/titles_titles.csv',
-                       './static/rdata/users_yamdbuser.csv']
-        csv_to_sqlite.write_csv(input_files, './db.sqlite3', options)
-    '''
-        
