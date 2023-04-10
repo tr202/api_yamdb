@@ -54,7 +54,6 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = (permissions.AllowAny,)
     serializer_class = YamdbUserSerializer
     queryset = YamdbUser.objects.all()
-    # http_method_names = ['post']
 
     def check_exists(self, data):
         if data.get('username') and data.get('email'):
@@ -62,10 +61,8 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
             email = data.get('email')
             try:
                 user = self.model.objects.get(username=username, email=email)
-                # print(user)
                 return user
             except ObjectDoesNotExist:
-                # print('not Exists')
                 return False
 
     def create(self, request, *args, **kwargs):

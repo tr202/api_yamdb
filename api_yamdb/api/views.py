@@ -18,9 +18,11 @@ from titles.models import Category, Genre, Title, Review, Comment
 from .serializers import (CategorySerializer, GenreSerializer,
                           TitleSerializer, ReviewSerializer, CommentSerializer)
 
-#EXTRACT_POST_ID_PATTERN = r'posts\/([0-9]+)'
+#  EXTRACT_POST_ID_PATTERN = r'posts\/([0-9]+)'
 
 '''Заглушки viewsets'''
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     queryset = Category.objects.all()

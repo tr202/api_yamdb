@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import PasswordField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import exceptions
-from rest_framework import exceptions
+
 from .models import YamdbUser, RoleChoices
 
 USERNAME_PATTERN = r'^[\w.@+-]+$'
