@@ -23,8 +23,8 @@ class Title(models.Model):
     name = models.CharField(max_length=256)
     year = models.DateField()
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, related_name='category')
-    description = models.CharField(max_length=256)
+        Category, null=True, blank=True, on_delete=models.SET_NULL, related_name='titles')
+    description = models.CharField(blank=True, null=True, max_length=256)
 
     def __str__(self):
         return self.name
@@ -32,9 +32,9 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.SET_NULL, related_name='titles')
+        Title, on_delete=models.CASCADE, related_name='titles_genre')
     genre = models.ForeignKey(
-        Genre, on_delete=models.SET_NULL, related_name='genres')
+        Genre, on_delete=models.CASCADE, related_name='genre_titles')
     
 
 class Review(models.Model):
@@ -42,7 +42,7 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE, related_name='title',)
     text = models.TextField()
     author = models.ForeignKey(
-        YamdbUser, on_delete=models.CASCADE, related_name='author',)
+        YamdbUser, on_delete=models.CASCADE, related_name='rewiew',)
     score = models.IntegerField(blank=True, null=True,)  # Возможно лучше char
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True, blank=True, null=True,)
