@@ -31,11 +31,11 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(
-        Genre, on_delete=models.SET_NULL, related_name='genres')
     title = models.ForeignKey(
         Title, on_delete=models.SET_NULL, related_name='titles')
-
+    genre = models.ForeignKey(
+        Genre, on_delete=models.SET_NULL, related_name='genres')
+    
 
 class Review(models.Model):
     title = models.ForeignKey(

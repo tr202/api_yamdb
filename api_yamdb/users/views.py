@@ -62,10 +62,10 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
             email = data.get('email')
             try:
                 user = self.model.objects.get(username=username, email=email)
-                print(user)
+                # print(user)
                 return user
             except ObjectDoesNotExist:
-                print('not Exists')
+                # print('not Exists')
                 return False
 
     def create(self, request, *args, **kwargs):
