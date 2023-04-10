@@ -1,0 +1,7 @@
+id,password,last_login,is_superuser,first_name,last_name,is_staff,is_active,date_joined,username,email,bio,role
+100,qw,12,0,qw,qw,0,1,2023-04-10 03:42:28.919644,qwe,qwe@qwe.we,wer,admin
+109,d12,2,0,w,w,0,1,2023-04-10 03:42:28.919644,bingobongo,bingobongo@yamdb.fake,bio,user
+101,d12,2,0,w,w,0,1,2023-04-10 03:42:28.919644,capt_obvious,capt_obvious@yamdb.fake,bio,admin
+102,d12,2,0,w,w,0,1,2023-04-10 03:42:28.919644,faust,faust@yamdb.fake,bio,user
+103,d34,w,w,w,w,w,w,2023-04-10 03:42:28.919644,reviewer,reviewer@yamdb.fake,bio,user
+104,d23,w,w,w,w,w,w,2023-04-10 03:42:28.919644,angry,angry@yamdb.fake,bio,moderator
