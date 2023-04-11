@@ -1,6 +1,7 @@
 from django.db import models
 
 from users.models import YamdbUser
+from .utils import slugify
 
 
 class Category(models.Model):
@@ -39,7 +40,7 @@ class GenreTitle(models.Model):
         Title, on_delete=models.CASCADE)
     genre = models.ForeignKey(
         Genre, on_delete=models.CASCADE)
-    
+
 
 class Review(models.Model):
     title = models.ForeignKey(

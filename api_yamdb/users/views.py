@@ -27,7 +27,7 @@ class YamdbUsersViewSet(viewsets.ModelViewSet):
     model = YamdbUser
     permission_classes = (IsAdminRole,)
     serializer_class = FullYamdbUserSerialiser
-    queryset = YamdbUser.objects.all().select_related('genre')
+    queryset = YamdbUser.objects.all()
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=username',)
     http_method_names = ('get', 'delete', 'post', 'patch',)
@@ -69,6 +69,7 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
         user = self.check_exists(request.data)
         confirmation_code = confirmation_code_generator()
         if user:
+            print(user)
             user.set_password(confirmation_code)
             user.save()
             send_confirm_email(confirmation_code, user.email)
