@@ -12,7 +12,7 @@ router_v1.register('auth/signup', SignupViewSet, 'signup')
 router_v1.register('users', YamdbUsersViewSet, 'users')
 router_v1.register('categories', CategoryViewSet, 'categories')
 router_v1.register('genres', GenreViewSet, 'genres')
-router_v1.register('titles', TitleViewSet, 'genres')
+router_v1.register('titles', TitleViewSet, 'titles')
 router_v1.register(r'titles\/[\d]+\/reviews', ReviewViewSet, 'reviews')
 router_v1.register(r'titles\/[\d]+\/reviews\/[\d]+\/comments',
                    CommentViewSet, 'comments')
