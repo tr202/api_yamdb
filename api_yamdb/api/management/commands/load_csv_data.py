@@ -34,9 +34,9 @@ class Command(BaseCommand):
         # ---------------------genre_title---------------------------
         try:
             genre_title = pd.read_csv('./static/rdata/titles_genre_title.csv')
-            genre_title.to_sql('titles_genre_title', conn, if_exists='append', index = False, chunksize = 10000)
+            genre_title.to_sql('titles_genretitle', conn, if_exists='append', index = False, chunksize = 10000)
         except Exception as e:
-            print('genre_title', e)
+            print('titles_genretitle', e)
         # ---------------------review---------------------------
         try:
             review = pd.read_csv('./static/rdata/titles_review.csv')

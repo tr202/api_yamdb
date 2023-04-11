@@ -21,10 +21,14 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=256)
-    year = models.DateField()
+    year = models.IntegerField()
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
         Category, null=True, blank=True, on_delete=models.SET_NULL, related_name='titles')
     description = models.CharField(blank=True, null=True, max_length=256)
+
+    class Meta:
+        ordering = ('pk',)
 
     def __str__(self):
         return self.name
@@ -32,9 +36,9 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='titles_genre')
+        Title, on_delete=models.CASCADE)
     genre = models.ForeignKey(
-        Genre, on_delete=models.CASCADE, related_name='genre_titles')
+        Genre, on_delete=models.CASCADE)
     
 
 class Review(models.Model):

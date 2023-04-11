@@ -27,7 +27,7 @@ class YamdbUsersViewSet(viewsets.ModelViewSet):
     model = YamdbUser
     permission_classes = (IsAdminRole,)
     serializer_class = FullYamdbUserSerialiser
-    queryset = YamdbUser.objects.all()
+    queryset = YamdbUser.objects.all().select_related('genre')
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=username',)
     http_method_names = ('get', 'delete', 'post', 'patch',)
