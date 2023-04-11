@@ -1,7 +1,7 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 
 from users.models import YamdbUser
-from .utils import slugify
 
 
 class Category(models.Model):
@@ -25,7 +25,8 @@ class Title(models.Model):
     year = models.IntegerField()
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
-        Category, null=True, blank=True, on_delete=models.SET_NULL, related_name='titles')
+        Category, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='titles')
     description = models.CharField(blank=True, null=True, max_length=256)
 
     class Meta:
@@ -52,8 +53,16 @@ class Review(models.Model):
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True, blank=True, null=True,)
 
+    class Meta:
+        constraints = (
+            UniqueConstraint(
+                name='no_double_review',
+                fields=['title', 'author']
+            ),
+        )
+
     def __str__(self):
-        return self.title
+        return self.text[:100]
 
 
 class Comment(models.Model):
