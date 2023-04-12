@@ -1,7 +1,7 @@
 import re
 
 from http import HTTPStatus
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from rest_framework import status
 from rest_framework import viewsets
@@ -60,28 +60,29 @@ class GenreViewSet(BaseCategoryGenreViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminRole,)
-    queryset = Title.objects.all().select_related('category')
+    queryset = Title.objects.all()
     serializer_class = TitleSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=category', '=genre', '=name', '=year')
 
+    
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = TitleDetailSerializer
         return super(TitleViewSet, self).retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        #_mutable = request.data
-        request.data._mutable = True
-        genres = Genre.objects.filter(slug__in=request.data.pop('genre', []))
-        request.data._mutable = False
+        #request.data._mutable = True
+        #genres = Genre.objects.filter(slug__in=request.data.pop('genre', []))
+        #request.data._mutable = False
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
+            genres = Genre.objects.filter(slug__in=serializer.validated_data)
             self.perform_create(serializer, genres)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=HTTPStatus.CREATED, headers=headers)
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except IntegrityError:
             return Response('Already exists', HTTPStatus.BAD_REQUEST)
 
@@ -108,6 +109,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         try:
             title = Title.objects.get(pk=self.get_title_id())
             #if self.check_exists(title, request.user):
@@ -118,6 +120,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
+        except ObjectDoesNotExist:
+            return Response('Does not exists', status.HTTP_404_NOT_FOUND)
 
     def perform_create(self, serializer, title):
         serializer.save(author=self.request.user, title=title)
@@ -152,6 +156,7 @@ class CommentViewSet(viewsets.ModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
-
+        except ObjectDoesNotExist:
+            return Response('Does not exists', status.HTTP_404_NOT_FOUND)
     def perform_create(self, serializer, review):
         serializer.save(author=self.request.user, review=review)
