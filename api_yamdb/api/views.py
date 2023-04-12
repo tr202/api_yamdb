@@ -1,10 +1,16 @@
 import re
-
+import operator
+from functools import reduce
 from http import HTTPStatus
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models import Prefetch, Q
+from django.db import models
+from rest_framework import request
+
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.compat import distinct
 from rest_framework.mixins import (CreateModelMixin,
                                    ListModelMixin,
                                    RetrieveModelMixin)
@@ -12,6 +18,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 
 from .permissions import IsOwnerOrReadOnly, IsAdminModeratorOwnerOrReadOnly, IsAdminRole
@@ -24,12 +31,17 @@ from .serializers import (CategorySerializer, CreateUpdateTitleSerializer, Genre
 EXTRACT_TITLE_ID_PATTERN = r'titles\/([0-9]+)'
 EXTRACT_TITLE_ID_AND_REVIEW_ID = r'titles\/([0-9]+)\/reviews\/([0-9]+)'
 METHOD_NOT_ALLOWED = 'Method not allowed'
+PAGE_SIZE = 50
+PAGE_SIZE_QUERY_PARAM = 'page_size'
+MAX_PAGE_SIZE = 500
+FILTER_PARAMS = {'category': 'category__slug',
+                 'name': 'name', 'genre': 'genre__slug', 'year': 'year'}
 
 
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 50
-    page_size_query_param = 'page_size'
-    max_page_size = 500
+    page_size = PAGE_SIZE
+    page_size_query_param = PAGE_SIZE_QUERY_PARAM
+    max_page_size = MAX_PAGE_SIZE
 
 
 class BaseCategoryGenreViewSet(viewsets.ModelViewSet):
@@ -58,13 +70,22 @@ class GenreViewSet(BaseCategoryGenreViewSet):
     serializer_class = GenreSerializer
 
 
+class TileFilter(filters.SearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        search_kwargs = {}
+        for param in request.GET:
+            print(param)
+            search_kwargs[FILTER_PARAMS.get(param)] = request.GET.get(param)
+        return Title.objects.filter(**search_kwargs)
+
+
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminRole,)
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('=category', '=genre__slug', '=name', '=year')
+    filter_backends = (TileFilter,)
+    #search_fields = ('name','genre','category','year')
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = TitleDetailSerializer
@@ -79,7 +100,8 @@ class TitleViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer, genres)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+                serializer.data, status=status.HTTP_201_CREATED,
+                headers=headers)
         except IntegrityError:
             return Response('Already exists', HTTPStatus.BAD_REQUEST)
 

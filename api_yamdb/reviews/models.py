@@ -8,6 +8,9 @@ class Category(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
 
+    class Meta:
+        ordering = ('pk',)
+
     def __str__(self):
         return self.name
 
@@ -15,6 +18,9 @@ class Category(models.Model):
 class Genre(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
+
+    class Meta:
+        ordering = ('pk',)
 
     def __str__(self):
         return self.name
@@ -38,9 +44,9 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE)
+        Title, on_delete=models.CASCADE, related_name='title_genre')
     genre = models.ForeignKey(
-        Genre, on_delete=models.CASCADE)
+        Genre, on_delete=models.CASCADE, related_name='genre_title')
 
 
 class Review(models.Model):
@@ -60,6 +66,7 @@ class Review(models.Model):
                 fields=['title', 'author']
             ),
         )
+        ordering = ('pk',)
 
     def __str__(self):
         return self.text[:100]
@@ -73,6 +80,9 @@ class Comment(models.Model):
         YamdbUser, on_delete=models.CASCADE, related_name='author',)
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True, blank=True, null=True,)
+
+    class Meta:
+        ordering = ('pk',)
 
     def __str__(self):
         return self.text[:100]
