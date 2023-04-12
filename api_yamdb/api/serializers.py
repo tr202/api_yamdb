@@ -42,8 +42,7 @@ class TitleDetailSerializer(TitleSerializer):
             return int(sum/count)
         else:
             return 'None'
-    
-
+        
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -51,9 +50,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True, slug_field='username',
     )
 
+    def validate_score(self, value):
+        if value > 10:
+            raise serializers.ValidationError("Score can not be more than 10")
+        return value
+
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date',)
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -63,4 +67,4 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'pub_date',)
+        fields = ('id', 'text', 'author', 'pub_date')
