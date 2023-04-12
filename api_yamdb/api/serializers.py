@@ -30,6 +30,11 @@ class TitleDetailSerializer(TitleSerializer):
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
+        read_only_fields = ('id', 'rating')
+    
+    def validate(self, attrs):
+        print(attrs)
+        return super().validate(attrs)
     
     def get_rating(self, obj):
         rewievs = Review.objects.filter(title=obj)
@@ -42,7 +47,19 @@ class TitleDetailSerializer(TitleSerializer):
             return int(sum/count)
         else:
             return 'None'
-        
+
+
+class CreateUpdateTitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(), slug_field='slug',
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(), slug_field='slug', many=True
+    )
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
 
 class ReviewSerializer(serializers.ModelSerializer):

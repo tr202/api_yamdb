@@ -17,7 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from .permissions import IsOwnerOrReadOnly, IsAdminModeratorOwnerOrReadOnly, IsAdminRole
 from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
 from .permissions import IsAdminRoleOrStaff
-from .serializers import (CategorySerializer, GenreSerializer,
+from .serializers import (CategorySerializer, CreateUpdateTitleSerializer, GenreSerializer,
                           TitleSerializer, TitleDetailSerializer,
                           ReviewSerializer, CommentSerializer)
 
@@ -64,17 +64,14 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('=category', '=genre', '=name', '=year')
+    search_fields = ('=category', '=genre__slug', '=name', '=year')
 
-    
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = TitleDetailSerializer
         return super(TitleViewSet, self).retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        #request.data._mutable = True
-        #genres = Genre.objects.filter(slug__in=request.data.pop('genre', []))
-        #request.data._mutable = False
+        self.serializer_class = CreateUpdateTitleSerializer
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -86,8 +83,14 @@ class TitleViewSet(viewsets.ModelViewSet):
         except IntegrityError:
             return Response('Already exists', HTTPStatus.BAD_REQUEST)
 
-    def perform_create(self, serializer, genre):
-        serializer.save(genre=genre)
+    def update(self, request, *args, **kwargs):
+        self.serializer_class = CreateUpdateTitleSerializer
+        return super().update(request, *args, **kwargs)
+
+    def perform_create(self, serializer, genres):
+        title = serializer.save()
+        for genre in genres:
+            GenreTitle.objects.bulk_create(genre=genre, title=title)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -103,17 +106,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Review.objects.filter(
             title=self.get_title_id())
 
-    #def check_exists(self, title, user):
-     #   return Review.objects.filter(title=title, author=user).exists()
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
             title = Title.objects.get(pk=self.get_title_id())
-            #if self.check_exists(title, request.user):
-             #   return Response('Already exists', status.HTTP_400_BAD_REQUEST)
             self.perform_create(serializer, title)
             headers = self.get_success_headers(serializer.data)
             return Response(
