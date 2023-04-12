@@ -1,3 +1,5 @@
+#  from django.db.models import Avg
+
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment
@@ -6,22 +8,22 @@ from reviews.models import Category, Genre, Title, Review, Comment
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = ('name', 'slug',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        fields = ('name', 'slug',)
 
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, required=False)
     category = CategorySerializer(many=False, required=False)
-    
+
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
 
 
 class TitleDetailSerializer(TitleSerializer):
@@ -29,13 +31,14 @@ class TitleDetailSerializer(TitleSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
-        read_only_fields = ('id', 'rating')
-    
+        fields = ('id', 'name', 'year', 'rating', 'description',
+                  'genre', 'category')
+        read_only_fields = ('id', 'rating',)
+
     def validate(self, attrs):
         print(attrs)
         return super().validate(attrs)
-    
+
     def get_rating(self, obj):
         rewievs = Review.objects.filter(title=obj)
         sum = 0
@@ -43,8 +46,8 @@ class TitleDetailSerializer(TitleSerializer):
         for review in rewievs:
             sum += review.score
             count += 1
-        if sum>0:
-            return int(sum/count)
+        if sum > 0:
+            return int(sum / count)
         else:
             return 'None'
 
