@@ -1,4 +1,4 @@
-#  from django.db.models import Avg
+from django.db.models import Avg
 
 from rest_framework import serializers
 
@@ -40,16 +40,11 @@ class TitleDetailSerializer(TitleSerializer):
         return super().validate(attrs)
 
     def get_rating(self, obj):
-        rewievs = Review.objects.filter(title=obj)
-        sum = 0
-        count = 0
-        for review in rewievs:
-            sum += review.score
-            count += 1
-        if sum > 0:
-            return int(sum / count)
-        else:
-            return 'None'
+        rating = Review.objects.filter(
+            title=obj).aggregate(Avg('score')).get('score__avg')
+        if rating:
+            return int(rating)
+        return None
 
 
 class CreateUpdateTitleSerializer(serializers.ModelSerializer):

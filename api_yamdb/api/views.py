@@ -163,7 +163,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         self.get_ids()
         print(self.title_id, ' ', self.review_id)
         return Comment.objects.filter(review_id=self.review_id)
-    
+
     def create(self, request, *args, **kwargs):
         self.get_ids()
         serializer = self.get_serializer(data=request.data)
@@ -173,10 +173,12 @@ class CommentViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer, review)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+                serializer.data, status=status.HTTP_201_CREATED,
+                headers=headers)
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
             return Response('Does not exists', status.HTTP_404_NOT_FOUND)
+
     def perform_create(self, serializer, review):
         serializer.save(author=self.request.user, review=review)

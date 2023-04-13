@@ -55,7 +55,7 @@ class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
         YamdbUser, on_delete=models.CASCADE, related_name='rewiew',)
-    score = models.IntegerField(blank=True, null=True,)  # Возможно лучше char
+    score = models.IntegerField(blank=True, null=True,)
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True, blank=True, null=True,)
 
