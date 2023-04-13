@@ -4,9 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Prefetch
 
-from rest_framework import filters
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 

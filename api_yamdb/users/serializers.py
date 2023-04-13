@@ -3,8 +3,7 @@ import re
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 
-from rest_framework import exceptions
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 
 from rest_framework_simplejwt.serializers import (PasswordField,
                                                   TokenObtainPairSerializer)
