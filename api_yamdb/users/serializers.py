@@ -24,7 +24,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate_username(self, attrs):
         username_exist = YamdbUser.objects.filter(username=attrs).exists()
-        print(username_exist)
         if username_exist:
             return attrs
         raise exceptions.NotFound(

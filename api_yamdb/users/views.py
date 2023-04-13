@@ -69,7 +69,6 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
         user = self.check_exists(request.data)
         confirmation_code = confirmation_code_generator()
         if user:
-            print(user)
             user.set_password(confirmation_code)
             user.save()
             send_confirm_email(confirmation_code, user.email)
