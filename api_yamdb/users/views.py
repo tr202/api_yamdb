@@ -1,19 +1,19 @@
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework import viewsets
-from rest_framework.mixins import CreateModelMixin
-from rest_framework import permissions
 from rest_framework import filters
-from rest_framework.response import Response
+from rest_framework import permissions
+from rest_framework import status
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from .models import YamdbUser
 from .permissions import IsAdminRole
 from .serializers import (FullYamdbUserSerialiser,
-                          YamdbUserSerializer,
-                          RestrictRoleYamdbUserSerialiser)
+                          RestrictRoleYamdbUserSerialiser,
+                          YamdbUserSerializer)
 from .utils import confirmation_code_generator, send_confirm_email
 
 
@@ -64,6 +64,7 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
                 return user
             except ObjectDoesNotExist:
                 return False
+        return False
 
     def create(self, request, *args, **kwargs):
         user = self.check_exists(request.data)

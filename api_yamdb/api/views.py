@@ -1,32 +1,21 @@
 import re
-import operator
-from functools import reduce
-from http import HTTPStatus
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
-from django.db.models import Prefetch, Q
-from django.db import models
-from rest_framework import request
 
+from rest_framework import filters
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.compat import distinct
-from rest_framework.mixins import (CreateModelMixin,
-                                   ListModelMixin,
-                                   RetrieveModelMixin)
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import permissions
-from rest_framework.response import Response
-from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
-from .permissions import IsOwnerOrReadOnly, IsAdminModeratorOwnerOrReadOnly, IsAdminRole
+from .permissions import (IsAdminModeratorOwnerOrReadOnly,
+                          IsAdminRole, IsAdminRoleOrStaff)
 from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
-from .permissions import IsAdminRoleOrStaff
-from .serializers import (CategorySerializer, CreateUpdateTitleSerializer, GenreSerializer,
+from .serializers import (CategorySerializer, CommentSerializer,
+                          CreateUpdateTitleSerializer, GenreSerializer,
                           TitleSerializer, TitleDetailSerializer,
-                          ReviewSerializer, CommentSerializer)
+                          ReviewSerializer)
 
 EXTRACT_TITLE_ID_PATTERN = r'titles\/([0-9]+)'
 EXTRACT_TITLE_ID_AND_REVIEW_ID = r'titles\/([0-9]+)\/reviews\/([0-9]+)'
@@ -85,7 +74,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = (TileFilter,)
-    #search_fields = ('name','genre','category','year')
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = TitleDetailSerializer
@@ -103,7 +91,7 @@ class TitleViewSet(viewsets.ModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED,
                 headers=headers)
         except IntegrityError:
-            return Response('Already exists', HTTPStatus.BAD_REQUEST)
+            return Response('Already exists', status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         self.serializer_class = CreateUpdateTitleSerializer
@@ -131,13 +119,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         try:
             title = Title.objects.get(pk=self.get_title_id())
             self.perform_create(serializer, title)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+                serializer.data, status=status.HTTP_201_CREATED,
+                headers=headers)
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
@@ -155,13 +143,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_ids(self):
         pattern = EXTRACT_TITLE_ID_AND_REVIEW_ID
         ids = re.findall(pattern, self.request.path)
-        self.title_id = ids[0][0]
         self.review_id = ids[0][1]
         return True
 
     def get_queryset(self):
         self.get_ids()
-        print(self.title_id, ' ', self.review_id)
         return Comment.objects.filter(review_id=self.review_id)
 
     def create(self, request, *args, **kwargs):
