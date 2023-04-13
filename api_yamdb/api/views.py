@@ -2,6 +2,7 @@ import re
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models import Prefetch
 
 from rest_framework import filters
 from rest_framework import status
@@ -63,14 +64,17 @@ class TileFilter(filters.SearchFilter):
     def filter_queryset(self, request, queryset, view):
         search_kwargs = {}
         for param in request.GET:
-            print(param)
             search_kwargs[FILTER_PARAMS.get(param)] = request.GET.get(param)
-        return Title.objects.filter(**search_kwargs)
+        return Title.objects.filter(**search_kwargs).select_related(
+            'category').prefetch_related('genre')
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminRole,)
-    queryset = Title.objects.all()
+    queryset = Title.objects.prefetch_related(Prefetch(
+        'titles_genre',
+        queryset=Genre.objects.only('id', 'name', 'slug')
+    )).select_related('titles_category')
     serializer_class = TitleSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = (TileFilter,)
@@ -99,8 +103,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer, genres):
         title = serializer.save()
-        for genre in genres:
-            GenreTitle.objects.bulk_create(genre=genre, title=title)
+        map(lambda _: GenreTitle.objects.get_or_create(title=title), genres)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -114,7 +117,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Review.objects.filter(
-            title=self.get_title_id())
+            title=self.get_title_id()).select_related('author')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -148,7 +151,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         self.get_ids()
-        return Comment.objects.filter(review_id=self.review_id)
+        return Comment.objects.filter(
+            review_id=self.review_id).select_related('author')
 
     def create(self, request, *args, **kwargs):
         self.get_ids()
