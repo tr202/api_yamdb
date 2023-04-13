@@ -10,7 +10,12 @@ class Command(BaseCommand):
         except Exception as e:
             print('Unable to import pandas', e)
         conn = sqlite3.connect('./db.sqlite3')
-        c = conn.cursor()
+        conn.cursor()
+        self.handle_1(conn, pd)
+        self.handle_2(conn, pd)
+
+    def handle_1(conn, pd):
+
         # ---------------------users---------------------------
         try:
             users = pd.read_csv('./static/rdata/users_yamdbuser.csv')
@@ -25,6 +30,7 @@ class Command(BaseCommand):
                             index=False, chunksize=10000)
         except Exception as e:
             print('category', e)
+
         # ---------------------genre---------------------------
         try:
             genre = pd.read_csv('./static/rdata/titles_genre.csv')
@@ -32,6 +38,8 @@ class Command(BaseCommand):
                          index=False, chunksize=10000)
         except Exception as e:
             print('genre', e)
+
+    def handle_2(conn, pd):
         # ---------------------title---------------------------
         try:
             titles = pd.read_csv('./static/rdata/titles_titles.csv')
