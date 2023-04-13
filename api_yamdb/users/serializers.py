@@ -1,13 +1,16 @@
 import re
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
-from rest_framework_simplejwt.settings import api_settings
-from rest_framework import serializers
-from rest_framework_simplejwt.serializers import PasswordField
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework import exceptions
 
-from .models import YamdbUser, RoleChoices
+from rest_framework import exceptions
+from rest_framework import serializers
+
+from rest_framework_simplejwt.serializers import (PasswordField,
+                                                  TokenObtainPairSerializer)
+from rest_framework_simplejwt.settings import api_settings
+
+from .models import RoleChoices, YamdbUser
 
 USERNAME_PATTERN = r'^[\w.@+-]+$'
 ME_UNACCEPTABLE_USERNAME = 'Me недопустимое имя пользователя'
@@ -20,24 +23,24 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         del self.fields['password']
-        self.fields["confirmation_code"] = PasswordField()
+        self.fields['confirmation_code'] = PasswordField()
 
     def validate_username(self, attrs):
         username_exist = YamdbUser.objects.filter(username=attrs).exists()
         if username_exist:
             return attrs
         raise exceptions.NotFound(
-            self.error_messages["no_active_account"],
-            "no_active_account",
+            self.error_messages['no_active_account'],
+            'no_active_account',
         )
 
     def validate(self, attrs):
         authenticate_kwargs = {
             self.username_field: attrs[self.username_field],
-            "password": attrs["confirmation_code"],
+            'password': attrs['confirmation_code'],
         }
         try:
-            authenticate_kwargs["request"] = self.context["request"]
+            authenticate_kwargs['request'] = self.context['request']
         except KeyError:
             pass
 
@@ -45,8 +48,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         if not api_settings.USER_AUTHENTICATION_RULE(self.user):
             raise exceptions.ValidationError(
-                self.error_messages["no_active_account"],
-                "no_active_account",
+                self.error_messages['no_active_account'],
+                'no_active_account',
             )
 
         data = {}

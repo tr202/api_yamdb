@@ -50,8 +50,11 @@ class YamdbUser(AbstractUser):
     class Meta:
         constraints = (
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_status_valid",
+                name='%(app_label)s_%(class)s_status_valid',
                 check=models.Q(role__in=RoleChoices.values),
             ),
         )
         ordering = ('pk',)
+
+    def __str__(self):
+        return self.username
