@@ -38,14 +38,9 @@ class YamdbUsersViewSet(viewsets.ModelViewSet):
         self.lookup_field = 'pk'
         self.kwargs['pk'] = request.user.pk
 
-        #  return self.retrieve(request) if request.method == 'GET' else self.partial_update(request)
-
-        if request.method == 'GET':
-            return self.retrieve(request)
-        elif request.method == 'PATCH':
-            return self.partial_update(request)
-        else:
-            raise Exception('Not implemented')
+        return (
+            self.retrieve(request) if request.method == 'GET'
+            else self.partial_update(request))
 
 
 class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
