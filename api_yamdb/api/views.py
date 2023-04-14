@@ -9,11 +9,15 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .permissions import (IsAdminModeratorOwnerOrReadOnly,
-                          IsAdminRole, IsAdminRoleOrStaff)
+                          IsAdminRole,
+                          IsAdminRoleOrModerator)
 from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
-from .serializers import (CategorySerializer, CommentSerializer,
-                          CreateUpdateTitleSerializer, GenreSerializer,
-                          TitleSerializer, TitleDetailSerializer,
+from .serializers import (CategorySerializer,
+                          CommentSerializer,
+                          CreateUpdateTitleSerializer,
+                          GenreSerializer,
+                          TitleSerializer,
+                          TitleDetailSerializer,
                           ReviewSerializer)
 
 EXTRACT_TITLE_ID_PATTERN = r'titles\/([0-9]+)'
@@ -23,7 +27,9 @@ PAGE_SIZE = 50
 PAGE_SIZE_QUERY_PARAM = 'page_size'
 MAX_PAGE_SIZE = 500
 FILTER_PARAMS = {'category': 'category__slug',
-                 'name': 'name', 'genre': 'genre__slug', 'year': 'year'}
+                 'name': 'name',
+                 'genre': 'genre__slug',
+                 'year': 'year'}
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -33,7 +39,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class BaseCategoryGenreViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAdminRoleOrStaff,)
+    permission_classes = (IsAdminRole,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = StandardResultsSetPagination
@@ -63,16 +69,20 @@ class TileFilter(filters.SearchFilter):
         search_kwargs = {}
         for param in request.GET:
             search_kwargs[FILTER_PARAMS.get(param)] = request.GET.get(param)
-        return Title.objects.filter(**search_kwargs).select_related(
-            'category').prefetch_related('genre')
+        return (
+            Title.objects.filter(**search_kwargs)
+            .select_related('category')
+            .prefetch_related('genre')
+        )
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAdminRole,)
-    queryset = Title.objects.prefetch_related(Prefetch(
-        'titles_genre',
-        queryset=Genre.objects.only('id', 'name', 'slug')
-    )).select_related('titles_category')
+    permission_classes = (IsAdminRoleOrModerator,)
+    queryset = (Title.objects.prefetch_related(
+        Prefetch('titles_genre',
+                 queryset=Genre.objects.only('id', 'name', 'slug')
+                 )).select_related('titles_category')
+                )
     serializer_class = TitleSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = (TileFilter,)
@@ -90,7 +100,8 @@ class TitleViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer, genres)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED,
+                serializer.data,
+                status=status.HTTP_201_CREATED,
                 headers=headers)
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
@@ -125,8 +136,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer, title)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED,
-                headers=headers)
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers
+            )
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
@@ -149,8 +162,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         self.get_ids()
-        return Comment.objects.filter(
-            review_id=self.review_id).select_related('author')
+        return (Comment.objects.filter(
+                review_id=self.review_id)
+                .select_related('author')
+                )
 
     def create(self, request, *args, **kwargs):
         self.get_ids()
@@ -161,8 +176,10 @@ class CommentViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer, review)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED,
-                headers=headers)
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers
+            )
         except IntegrityError:
             return Response('Already exists', status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:

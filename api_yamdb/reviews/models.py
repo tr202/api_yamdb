@@ -33,7 +33,9 @@ class Title(models.Model):
         Genre, through='GenreTitle', related_name='titles_genre',)
     category = models.ForeignKey(
         Category, null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='titles_category',)
+        on_delete=models.SET_NULL,
+        related_name='titles_category',
+    )
     description = models.CharField(blank=True, null=True, max_length=256,)
 
     class Meta:
@@ -45,9 +47,15 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='title_genre',)
+        Title,
+        on_delete=models.CASCADE,
+        related_name='title_genre',
+    )
     genre = models.ForeignKey(
-        Genre, on_delete=models.CASCADE, related_name='genre_title',)
+        Genre,
+        on_delete=models.CASCADE,
+        related_name='genre_title',
+    )
 
     class Meta:
         ordering = ('pk',)
@@ -61,13 +69,23 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='title',)
+        Title,
+        on_delete=models.CASCADE,
+        related_name='title',
+    )
     text = models.TextField()
     author = models.ForeignKey(
-        YamdbUser, on_delete=models.CASCADE, related_name='rewiew',)
+        YamdbUser,
+        on_delete=models.CASCADE,
+        related_name='rewiew',
+    )
     score = models.IntegerField(blank=True, null=True,)
     pub_date = models.DateTimeField(
-        'Дата публикации', auto_now_add=True, blank=True, null=True,)
+        'Дата публикации',
+        auto_now_add=True,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         constraints = (
@@ -84,12 +102,21 @@ class Review(models.Model):
 
 class Comment(models.Model):
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments',)
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
     text = models.TextField()
     author = models.ForeignKey(
-        YamdbUser, on_delete=models.CASCADE, related_name='author',)
+        YamdbUser,
+        on_delete=models.CASCADE,
+        related_name='author',
+    )
     pub_date = models.DateTimeField(
-        'Дата публикации', auto_now_add=True, blank=True, null=True,)
+        'Дата публикации',
+        auto_now_add=True,
+        blank=True, null=True,
+    )
 
     class Meta:
         ordering = ('pk',)
