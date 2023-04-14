@@ -4,9 +4,10 @@
 
 ### Авторы
 Студенты 55 когорты курсы [Python Backend](https://practicum.yandex.ru/profile/backend-developer/) школы Yandex Practicum.
-- Константин Волков - *тимлид*: [github](https://github.com/tr202)
+- Анатолий Шерин: [github](https://github.com/AnatoliyPracticum)
 - Геннадий Умикашвили: [github](https://github.com/Gennady-Umikashvili)
 - Анатолий Шерин: [github](https://github.com/AnatoliyPracticum)
+- Константин Волков : [github](https://github.com/tr202)
 
 ### Технологии
 Python 3.9
