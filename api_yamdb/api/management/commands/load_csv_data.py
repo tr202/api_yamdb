@@ -14,7 +14,7 @@ class Command(BaseCommand):
         self.handle_1(conn, pd)
         self.handle_2(conn, pd)
 
-    def handle_1(conn, pd):
+    def handle_1(self, conn, pd):
 
         # ---------------------users---------------------------
         try:
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         except Exception as e:
             print('genre', e)
 
-    def handle_2(conn, pd):
+    def handle_2(self, conn, pd):
         # ---------------------title---------------------------
         try:
             titles = pd.read_csv('./static/rdata/titles_titles.csv')

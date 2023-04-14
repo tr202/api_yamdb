@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from .permissions import (IsAdminModeratorOwnerOrReadOnly,
                           IsAdminRole, IsAdminRoleOrStaff)
 from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
+from .authentication import CustomJWTAuthentication
 from .serializers import (CategorySerializer, CommentSerializer,
                           CreateUpdateTitleSerializer, GenreSerializer,
                           TitleSerializer, TitleDetailSerializer,
@@ -33,6 +34,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class BaseCategoryGenreViewSet(viewsets.ModelViewSet):
+    authentication_classes = (CustomJWTAuthentication,)
     permission_classes = (IsAdminRoleOrStaff,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -68,6 +70,7 @@ class TileFilter(filters.SearchFilter):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    authentication_classes = (CustomJWTAuthentication,)
     permission_classes = (IsAdminRole,)
     queryset = Title.objects.prefetch_related(Prefetch(
         'titles_genre',
@@ -105,6 +108,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    authentication_classes = (CustomJWTAuthentication,)
     permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
     serializer_class = ReviewSerializer
     pagination_class = StandardResultsSetPagination
@@ -137,6 +141,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    authentication_classes = (CustomJWTAuthentication,)
     permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
     serializer_class = CommentSerializer
     pagination_class = StandardResultsSetPagination
