@@ -6,6 +6,16 @@ class YamdbUserManager(BaseUserManager):
 
     use_in_migration = True
 
+    @property
+    def email(self):
+        return self.email
+
+    @email.setter
+    def email(self, value):
+        if not value:
+            raise ValueError('Email field cannot be empty')
+        self._email = value
+
     def create_user(self, email, password=None, **extra_fields):
         return self.create(email, password=None, **extra_fields)
 
