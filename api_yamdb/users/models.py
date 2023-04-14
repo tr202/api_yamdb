@@ -1,26 +1,5 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
-class YamdbUserManager(BaseUserManager):
-
-    use_in_migration = True
-
-    def create_user(self, email, password=None, **extra_fields):
-        return self.create(email, password=None, **extra_fields)
-
-    def create(self, email, password=None, **extra_fields):
-        user = self.model(email=self.normalize_email(email), **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, password, **extra_fields):
-        extra_fields.setdefault('role', 'admin')
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-        return self.create(email, password, **extra_fields)
 
 
 class RoleChoices(models.TextChoices):
@@ -31,9 +10,17 @@ class RoleChoices(models.TextChoices):
 
 class YamdbUser(AbstractUser):
     username = models.CharField(
-        unique=True, blank=False, null=False, max_length=150)
+        unique=True,
+        blank=False,
+        null=False,
+        max_length=150
+    )
     email = models.EmailField(
-        unique=True, blank=False, null=False, max_length=254)
+        unique=True,
+        blank=False,
+        null=False,
+        max_length=254
+    )
     bio = models.TextField(
         'Биография',
         blank=True,
@@ -45,8 +32,6 @@ class YamdbUser(AbstractUser):
         default=RoleChoices.USER,
     )
 
-    objects = YamdbUserManager()
-
     class Meta:
         constraints = (
             models.CheckConstraint(
@@ -55,6 +40,17 @@ class YamdbUser(AbstractUser):
             ),
         )
         ordering = ('pk',)
+
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.role == 'admin'
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
+
+    def is_owner(self, obj):
+        return obj == self
 
     def __str__(self):
         return self.username
