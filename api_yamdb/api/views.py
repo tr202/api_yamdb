@@ -17,8 +17,6 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           TitleSerializer, TitleDetailSerializer,
                           ReviewSerializer)
 
-EXTRACT_TITLE_ID_PATTERN = r'titles\/([0-9]+)'
-EXTRACT_TITLE_ID_AND_REVIEW_ID = r'titles\/([0-9]+)\/reviews\/([0-9]+)'
 METHOD_NOT_ALLOWED = 'Method not allowed'
 PAGE_SIZE = 50
 PAGE_SIZE_QUERY_PARAM = 'page_size'
@@ -113,19 +111,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = StandardResultsSetPagination
 
-    def get_title_id(self):
-        pattern = EXTRACT_TITLE_ID_PATTERN
-        return re.findall(pattern, self.request.path)[0]
-
     def get_queryset(self):
         return Review.objects.filter(
-            title=self.get_title_id()).select_related('author')
+            title=self.kwargs.get('title_id')).select_related('author')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            title = Title.objects.get(pk=self.get_title_id())
+            title = Title.objects.get(pk=self.kwargs.get('title_id'))
             self.perform_create(serializer, title)
             headers = self.get_success_headers(serializer.data)
             return Response(
@@ -146,23 +140,16 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = StandardResultsSetPagination
 
-    def get_ids(self):
-        pattern = EXTRACT_TITLE_ID_AND_REVIEW_ID
-        ids = re.findall(pattern, self.request.path)
-        self.review_id = ids[0][1]
-        return True
-
     def get_queryset(self):
-        self.get_ids()
         return Comment.objects.filter(
-            review_id=self.review_id).select_related('author')
+            review_id=self.kwargs.get('review_id')).select_related('author')
 
     def create(self, request, *args, **kwargs):
         self.get_ids()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            review = Review.objects.get(pk=self.review_id)
+            review = Review.objects.get(pk=self.kwargs.get('review_id'))
             self.perform_create(serializer, review)
             headers = self.get_success_headers(serializer.data)
             return Response(
