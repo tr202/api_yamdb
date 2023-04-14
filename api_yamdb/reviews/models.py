@@ -5,8 +5,8 @@ from users.models import YamdbUser
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=200,)
+    slug = models.SlugField(unique=True,)
 
     class Meta:
         ordering = ('pk',)
@@ -16,8 +16,8 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=200,)
+    slug = models.SlugField(unique=True,)
 
     class Meta:
         ordering = ('pk',)
@@ -27,14 +27,14 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256,)
     year = models.IntegerField()
     genre = models.ManyToManyField(
-        Genre, through='GenreTitle', related_name='titles_genre')
+        Genre, through='GenreTitle', related_name='titles_genre',)
     category = models.ForeignKey(
         Category, null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='titles_category')
-    description = models.CharField(blank=True, null=True, max_length=256)
+        on_delete=models.SET_NULL, related_name='titles_category',)
+    description = models.CharField(blank=True, null=True, max_length=256,)
 
     class Meta:
         ordering = ('pk',)
@@ -45,9 +45,18 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='title_genre')
+        Title, on_delete=models.CASCADE, related_name='title_genre',)
     genre = models.ForeignKey(
-        Genre, on_delete=models.CASCADE, related_name='genre_title')
+        Genre, on_delete=models.CASCADE, related_name='genre_title',)
+
+    class Meta:
+        ordering = ('pk',)
+
+    def __str__(self):
+        return (Genre.objects.get(pk=self.title).name
+                + '-'
+                + Title.objects.get(pk=self.genre).slug
+                )
 
 
 class Review(models.Model):
@@ -64,7 +73,7 @@ class Review(models.Model):
         constraints = (
             UniqueConstraint(
                 name='no_double_review',
-                fields=['title', 'author']
+                fields=('title', 'author',)
             ),
         )
         ordering = ('pk',)
@@ -75,7 +84,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments')
+        Review, on_delete=models.CASCADE, related_name='comments',)
     text = models.TextField()
     author = models.ForeignKey(
         YamdbUser, on_delete=models.CASCADE, related_name='author',)
