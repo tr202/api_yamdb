@@ -42,7 +42,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class BasePermissionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method in set(SAFE_METHODS):
-            return AllowAny
+            return (AllowAny(),)
         return super().get_permissions()
 
 
