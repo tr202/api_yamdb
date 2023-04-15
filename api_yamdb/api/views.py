@@ -6,6 +6,7 @@ from django.db.models import Prefetch
 
 from rest_framework import filters, status, viewsets
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
 
 from .permissions import (IsAdminModeratorOwnerOrReadOnly,
@@ -38,7 +39,14 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = MAX_PAGE_SIZE
 
 
-class BaseCategoryGenreViewSet(viewsets.ModelViewSet):
+class BasePermissionViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        if self.request.method in set(SAFE_METHODS):
+            return AllowAny
+        return super().get_permissions()
+
+
+class BaseCategoryGenreViewSet(BasePermissionViewSet):
     permission_classes = (IsAdminRole,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -76,7 +84,7 @@ class TileFilter(filters.SearchFilter):
         )
 
 
-class TitleViewSet(viewsets.ModelViewSet):
+class TitleViewSet(BasePermissionViewSet):
     permission_classes = (IsAdminRoleOrModerator,)
     queryset = (Title.objects.prefetch_related(
         Prefetch('titles_genre',
@@ -115,7 +123,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         map(lambda _: GenreTitle.objects.get_or_create(title=title), genres)
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(BasePermissionViewSet):
     permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
     serializer_class = ReviewSerializer
     pagination_class = StandardResultsSetPagination
@@ -149,7 +157,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(BasePermissionViewSet):
     permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
     serializer_class = CommentSerializer
     pagination_class = StandardResultsSetPagination
