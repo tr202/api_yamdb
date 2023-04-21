@@ -1,3 +1,4 @@
+import json
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import filters, permissions, status, viewsets
@@ -31,8 +32,8 @@ class YamdbUsersViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     lookup_field = 'username'
 
-    @action(detail=False, methods=['get', 'patch'], url_path='me',
-            url_name='me', permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=('get', 'patch',), url_path='me',
+            url_name='me', permission_classes=(permissions.IsAuthenticated,))
     def me(self, request):
         self.serializer_class = RestrictRoleYamdbUserSerialiser
         self.lookup_field = 'pk'
@@ -49,32 +50,21 @@ class SignupViewSet(CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = YamdbUserSerializer
     queryset = YamdbUser.objects.all()
 
-    def check_exists(self, data):
-        if data.get('username') and data.get('email'):
-            username = data.get('username')
-            email = data.get('email')
-            try:
-                user = self.model.objects.get(username=username, email=email)
-                return user
-            except ObjectDoesNotExist:
-                return False
-        return False
-
     def create(self, request, *args, **kwargs):
-        user = self.check_exists(request.data)
-        confirmation_code = confirmation_code_generator()
-        if user:
-            user.set_password(confirmation_code)
-            user.save()
-            send_confirm_email(confirmation_code, user.email)
+        self.conf_code = confirmation_code_generator()
+        try:
+            user = self.model.objects.get(
+                username=request.data.get('username'),
+                email=request.data.get('email')
+            )
+            user.set_password(self.conf_code) and user.save()
+            send_confirm_email(self.conf_code, user.email)
             return Response('Already exists', status.HTTP_200_OK)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer, confirmation_code)
-        send_confirm_email(confirmation_code, request.data.get('email'))
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_200_OK, headers=headers)
+        except Exception:
+            response = super().create(request, *args, **kwargs)
+            send_confirm_email(self.conf_code, self.user.email)
+            response.status_code = status.HTTP_200_OK
+            return response
 
-    def perform_create(self, serializer, confirmation_code):
-        serializer.save(password=confirmation_code)
+    def perform_create(self, serializer):
+        self.user = serializer.save(password=self.conf_code)

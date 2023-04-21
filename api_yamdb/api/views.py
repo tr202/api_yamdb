@@ -170,6 +170,7 @@ class CommentViewSet(BasePermissionViewSet):
 
     def get_queryset(self):
         self.get_ids()
+
         return (Comment.objects.filter(
                 review_id=self.review_id)
                 .select_related('author')
